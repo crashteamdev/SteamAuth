@@ -8,3 +8,5 @@ on:
 jobs:
   build:
     uses: crashteamdev/jvm-workflows/.github/workflows/maven-library-build.yml@v1
+    with:
+      java-version: '21'

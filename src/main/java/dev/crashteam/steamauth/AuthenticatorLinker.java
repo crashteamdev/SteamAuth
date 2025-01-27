@@ -1,6 +1,6 @@
 package dev.crashteam.steamauth;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.crashteam.steamauth.helper.Json;
 import dev.crashteam.steamauth.model.linker.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +30,6 @@ public class AuthenticatorLinker {
 
     public String confirmationEmailAddress;
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
     public AuthenticatorLinker(SessionData sessionData) {
         this.session = sessionData;
         this.deviceID = generateDeviceID();
@@ -50,7 +48,7 @@ public class AuthenticatorLinker {
                     }
                 }
 
-                Map<String, String> addAuthenticatorBody = new LinkedHashMap<String, String>();
+                Map<String, String> addAuthenticatorBody = new LinkedHashMap<>();
                 addAuthenticatorBody.put("steamid", String.valueOf(session.getSteamID()));
 
                 long serverTime = TimeAligner.getSteamTime();
@@ -64,7 +62,7 @@ public class AuthenticatorLinker {
                 String addAuthenticatorResponseStr = SteamWeb.postRequest(url, null, addAuthenticatorBody);
 
                 AddAuthenticatorResponse addAuthenticatorResponse =
-                        objectMapper.readValue(addAuthenticatorResponseStr, AddAuthenticatorResponse.class);
+                        Json.getInstance().fromJson(addAuthenticatorResponseStr, AddAuthenticatorResponse.class);
 
                 if (addAuthenticatorResponse == null || addAuthenticatorResponse.response == null) {
                     return LinkResult.GeneralFailure;
@@ -133,7 +131,7 @@ public class AuthenticatorLinker {
                     String finalizeResultStr = SteamWeb.postRequest(url, null, finalizeBody);
 
                     FinalizeAuthenticatorResponse finalizeResponse =
-                            objectMapper.readValue(finalizeResultStr, FinalizeAuthenticatorResponse.class);
+                            Json.getInstance().fromJson(finalizeResultStr, FinalizeAuthenticatorResponse.class);
 
                     if (finalizeResponse == null || finalizeResponse.response == null) {
                         return FinalizeResult.GeneralFailure;
@@ -179,7 +177,7 @@ public class AuthenticatorLinker {
                         + session.getAccessToken();
                 String responseStr = SteamWeb.postRequest(url, null, body);
 
-                GetUserCountryResponse response = objectMapper.readValue(responseStr, GetUserCountryResponse.class);
+                GetUserCountryResponse response = Json.getInstance().fromJson(responseStr, GetUserCountryResponse.class);
                 if (response != null && response.response != null && response.response.country != null) {
                     return response.response.country;
                 }
@@ -201,7 +199,7 @@ public class AuthenticatorLinker {
                         + session.getAccessToken();
                 String responseStr = SteamWeb.postRequest(url, null, body);
 
-                return objectMapper.readValue(responseStr, SetAccountPhoneNumberResponse.class);
+                return Json.getInstance().fromJson(responseStr, SetAccountPhoneNumberResponse.class);
             } catch (Exception e) {
                 LOG.error("Failed to set phone number", e);
                 return null;
@@ -217,7 +215,7 @@ public class AuthenticatorLinker {
                 String responseStr = SteamWeb.postRequest(url, null, null);
 
                 IsAccountWaitingForEmailConfirmationResponse resp =
-                        objectMapper.readValue(responseStr, IsAccountWaitingForEmailConfirmationResponse.class);
+                        Json.getInstance().fromJson(responseStr, IsAccountWaitingForEmailConfirmationResponse.class);
                 if (resp != null && resp.response != null) {
                     return resp.response.awaitingEmailConfirmation;
                 }
